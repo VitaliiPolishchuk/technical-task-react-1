@@ -3,8 +3,10 @@ import React, { useContext, useEffect, useReducer } from "react";
 import reducer from "../reducers/products_reducer";
 import { products_url as url } from "../utils/constants";
 import {
-  SIDEBAR_OPEN,
-  SIDEBAR_CLOSE,
+  PRODUCT_MODAL_OPEN,
+  PRODUCT_MODAL_CLOSE,
+  PRODUCT_DELETE_MODAL_OPEN,
+  PRODUCT_DELETE_MODAL_CLOSE,
   GET_PRODUCTS_BEGIN,
   GET_PRODUCTS_SUCCESS,
   GET_PRODUCTS_ERROR,
@@ -16,7 +18,9 @@ import {
 import { data } from "../seed";
 
 const initialState = {
-  isSidebarOpen: false,
+  isProductModalOpen: false,
+  isProductDeleteModalOpen: false,
+  idProductToDelete: null,
   products_loading: false,
   products_error: false,
   products: [],
@@ -31,11 +35,18 @@ const ProductsContext = React.createContext();
 export const ProductsProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const openSidebar = () => {
-    dispatch({ type: SIDEBAR_OPEN });
+  const openProductModal = () => {
+    dispatch({ type: PRODUCT_MODAL_OPEN });
   };
-  const closeSidebar = () => {
-    dispatch({ type: SIDEBAR_CLOSE });
+  const closeProductModal = () => {
+    dispatch({ type: PRODUCT_MODAL_CLOSE });
+  };
+
+  const openProductDeleteModal = (id) => {
+    dispatch({ type: PRODUCT_DELETE_MODAL_OPEN, payload: id });
+  };
+  const closeProductDeleteModal = () => {
+    dispatch({ type: PRODUCT_DELETE_MODAL_CLOSE });
   };
 
   const addProduct = (product) => {
@@ -46,12 +57,18 @@ export const ProductsProvider = ({ children }) => {
     fetchProducts();
   };
 
-  const removeProduct = (id) => {
-    localStorage.setItem(
-      "products",
-      JSON.stringify([...state.products.filter((product) => product.id != id)])
+  const removeProduct = () => {
+    const products = state.products.filter(
+      (product) => product.id !== state.idProductToDelete
     );
+    localStorage.setItem("products", JSON.stringify(products));
     fetchProducts();
+  };
+
+  const updateProduct = (product) => {
+    const products = state.products.filter((p) => p.id !== product.id);
+    localStorage.setItem("products", JSON.stringify([...products, product]));
+    fetchSingleProduct(product.id);
   };
 
   const fetchProducts = async (url) => {
@@ -59,10 +76,8 @@ export const ProductsProvider = ({ children }) => {
     try {
       // const response = await axios.get(url);
       let products = JSON.parse(localStorage.getItem("products"));
-      console.log(products);
       if (!products) {
         products = data;
-        console.log(products);
         localStorage.setItem("products", JSON.stringify(products));
       }
       dispatch({ type: GET_PRODUCTS_SUCCESS, payload: products });
@@ -70,11 +85,13 @@ export const ProductsProvider = ({ children }) => {
       dispatch({ type: GET_PRODUCTS_ERROR });
     }
   };
-  const fetchSingleProduct = async (url) => {
+  const fetchSingleProduct = async (id) => {
     dispatch({ type: GET_SINGLE_PRODUCT_BEGIN });
+    let products = JSON.parse(localStorage.getItem("products"));
     try {
-      const response = await axios.get(url);
-      const singleProduct = response.data;
+      const singleProduct = products.filter(
+        (product) => product.id.toString() === id.toString()
+      )[0];
       dispatch({ type: GET_SINGLE_PRODUCT_SUCCESS, payload: singleProduct });
     } catch (error) {
       dispatch({ type: GET_SINGLE_PRODUCT_ERROR });
@@ -89,9 +106,13 @@ export const ProductsProvider = ({ children }) => {
     <ProductsContext.Provider
       value={{
         ...state,
-        openSidebar,
-        closeSidebar,
+        openProductModal,
+        closeProductModal,
+        openProductDeleteModal,
+        closeProductDeleteModal,
         addProduct,
+        removeProduct,
+        updateProduct,
         fetchSingleProduct,
       }}
     >

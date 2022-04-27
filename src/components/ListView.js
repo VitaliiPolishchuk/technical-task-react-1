@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-import { formatPrice } from "../utils/helpers";
 import { Link } from "react-router-dom";
+import ProductDeleteButton from "./ProductDeleteButton";
+import ProductDeleteModal from "./ProductDeleteModal";
 const ListView = ({ products }) => {
   return (
     <Wrapper>
@@ -17,6 +18,7 @@ const ListView = ({ products }) => {
               <Link to={`/products/${id}`} className="btn">
                 Details
               </Link>
+              <ProductDeleteButton id={id} />
             </div>
           </article>
         );

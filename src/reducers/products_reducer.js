@@ -1,21 +1,32 @@
 import {
-  SIDEBAR_OPEN,
-  SIDEBAR_CLOSE,
+  PRODUCT_MODAL_OPEN,
+  PRODUCT_MODAL_CLOSE,
+  PRODUCT_DELETE_MODAL_OPEN,
+  PRODUCT_DELETE_MODAL_CLOSE,
   GET_PRODUCTS_BEGIN,
   GET_PRODUCTS_SUCCESS,
   GET_PRODUCTS_ERROR,
   GET_SINGLE_PRODUCT_BEGIN,
   GET_SINGLE_PRODUCT_SUCCESS,
   GET_SINGLE_PRODUCT_ERROR,
-  ADD_PRODUCT,
 } from "../actions";
 
 const products_reducer = (state, action) => {
-  if (action.type === SIDEBAR_OPEN) {
-    return { ...state, isSidebarOpen: true };
+  if (action.type === PRODUCT_MODAL_OPEN) {
+    return { ...state, isProductModalOpen: true };
   }
-  if (action.type === SIDEBAR_CLOSE) {
-    return { ...state, isSidebarOpen: false };
+  if (action.type === PRODUCT_MODAL_CLOSE) {
+    return { ...state, isProductModalOpen: false };
+  }
+  if (action.type === PRODUCT_DELETE_MODAL_OPEN) {
+    return {
+      ...state,
+      isProductDeleteModalOpen: true,
+      idProductToDelete: action.payload,
+    };
+  }
+  if (action.type === PRODUCT_DELETE_MODAL_CLOSE) {
+    return { ...state, isProductDeleteModalOpen: false };
   }
 
   if (action.type === GET_PRODUCTS_BEGIN) {
@@ -25,7 +36,6 @@ const products_reducer = (state, action) => {
     // const featured_products = action.payload.filter(
     //   (product) => product.featured === true
     // )
-    console.log(action.payload);
     return {
       ...state,
       products_loading: false,
@@ -58,7 +68,6 @@ const products_reducer = (state, action) => {
     };
   }
   // if (action.type === ADD_PRODUCT) {
-  //   console.log(action.payload);
   //   return {
   //     ...state,
   //     products: [...state.products, action.payload],

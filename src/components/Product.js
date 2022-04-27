@@ -2,8 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import ProductDeleteButton from "./ProductDeleteButton";
 const Product = ({ imageUrl, image, name, price, id }) => {
-  console.log(image);
   return (
     <Wrapper>
       <div className="container">
@@ -14,7 +14,7 @@ const Product = ({ imageUrl, image, name, price, id }) => {
       </div>
       <footer>
         <h5>{name}</h5>
-        {/* <p>{formatPrice(price)}</p> */}
+        <ProductDeleteButton id={id} />
       </footer>
     </Wrapper>
   );

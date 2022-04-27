@@ -1,9 +1,15 @@
 import React, { useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useProductsContext } from "../context/products_context";
-import { single_product_url as url } from "../utils/constants";
 import { formatPrice } from "../utils/helpers";
-import { Loading, Error, ProductImages, Stars, PageHero } from "../components";
+import {
+  Loading,
+  Error,
+  Stars,
+  PageHero,
+  EditProductButton,
+  ProductModal,
+} from "../components";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 const SingleProductPage = () => {
@@ -14,10 +20,10 @@ const SingleProductPage = () => {
     single_product_error: error,
     single_product: product,
     fetchSingleProduct,
+    updateProduct,
   } = useProductsContext();
-
   useEffect(() => {
-    fetchSingleProduct(`${url}${id}`);
+    fetchSingleProduct(id);
     // eslint-disable-next-line
   }, [id]);
   useEffect(() => {
@@ -34,49 +40,60 @@ const SingleProductPage = () => {
   if (error) {
     return <Error />;
   }
-
-  const {
-    name,
-    price,
-    description,
-    stock,
-    stars,
-    reviews,
-    id: sku,
-    company,
-    images,
-  } = product;
+  const { productId, name, count, imageUrl, stock, size, weight, comments } =
+    product;
+  let width = null;
+  let height = null;
+  if (size) {
+    width = size.width;
+    height = size.height;
+  }
   return (
     <Wrapper>
       <PageHero title={name} product />
       <div className="section section-center page">
-        <Link to="/products" className="btn">
-          back to products
-        </Link>
+        <div className="buttons">
+          <Link to="/" className="btn">
+            back to products
+          </Link>
+          <EditProductButton />
+        </div>
+
         <div className="product-center">
-          <ProductImages images={images} />
+          <img src={imageUrl} alt="" className="main " />
           <section className="content">
             <h2>{name}</h2>
-            <Stars stars={stars} reviews={reviews} />
-            <h5 className="price">{formatPrice(price)}</h5>
-            <p className="desc">{description}</p>
             <p className="info">
-              <span>Available : </span>
-              {stock > 0 ? "In stock" : "out of stock"}
+              <span>Count :</span>
+              {count}
             </p>
             <p className="info">
-              <span>SKU :</span>
-              {sku}
+              <span>Width :</span>
+              {width}
             </p>
             <p className="info">
-              <span>Brand :</span>
-              {company}
+              <span>Height :</span>
+              {height}
+            </p>
+            <p className="info">
+              <span>Weight :</span>
+              {weight}
             </p>
             <hr />
             {/* {stock > 0 && <AddToCart product={product} />} */}
           </section>
         </div>
       </div>
+      <div className="section section-center comments"></div>
+
+      {product?.size?.width && (
+        <ProductModal
+          inputProduct={product}
+          submitButtonText="Edit product"
+          addOrUpdate={updateProduct}
+          isUpdate={true}
+        />
+      )}
     </Wrapper>
   );
 };
@@ -102,6 +119,10 @@ const Wrapper = styled.main`
     span {
       font-weight: 700;
     }
+  }
+  .main {
+    height: 400px;
+    width: auto;
   }
 
   @media (min-width: 992px) {

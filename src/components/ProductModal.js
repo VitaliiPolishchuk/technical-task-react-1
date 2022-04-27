@@ -1,24 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useProductsContext } from "../context/products_context";
 
-const AddProduct = () => {
-  const {
-    isSidebarOpen: isOpen,
-    openSidebar,
-    closeSidebar,
-    addProduct,
-  } = useProductsContext();
+const ProductModal = ({
+  inputProduct,
+  submitButtonText,
+  addOrUpdate,
+  isUpdate,
+}) => {
+  const { closeProductModal, isProductModalOpen: isOpen } =
+    useProductsContext();
   const [error, setError] = useState(null);
-  const [product, setProduct] = useState({
-    id: "",
-    imageUrl: "",
-    name: "",
-    count: "",
-    width: "",
-    height: "",
-    weight: "",
-  });
+  const [product, setProduct] = useState(inputProduct);
 
   const handleSubmit = () => {
     let error = null;
@@ -27,21 +20,21 @@ const AddProduct = () => {
       product.imageUrl === "" ||
       product.name === "" ||
       product.count === "" ||
-      product.width === "" ||
-      product.height === "" ||
+      product.size.width === "" ||
+      product.size.height === "" ||
       product.weight === ""
     ) {
       error = "Any input fields cant be empty";
     }
     setError(error);
     if (!error) {
-      addProduct(product);
+      addOrUpdate(product);
+      closeProductModal();
     }
   };
 
   return (
     <Wrapper isOpen={isOpen}>
-      <button onClick={openSidebar}>addProduct</button>
       <div className="modal">
         <div className="field">
           <label className="labes">id</label>
@@ -54,6 +47,7 @@ const AddProduct = () => {
                 return { ...prevState, id: e.target.value };
               })
             }
+            disabled={isUpdate}
           />
         </div>
         <div className="field">
@@ -74,7 +68,7 @@ const AddProduct = () => {
           <input
             type="text"
             className="input"
-            value={product.inamed}
+            value={product.name}
             onChange={(e) =>
               setProduct((prevState) => {
                 return { ...prevState, name: e.target.value };
@@ -100,10 +94,16 @@ const AddProduct = () => {
           <input
             type="text"
             className="input"
-            value={product.width}
+            value={product.size.width}
             onChange={(e) =>
               setProduct((prevState) => {
-                return { ...prevState, width: e.target.value };
+                return {
+                  ...prevState,
+                  size: {
+                    height: prevState.size.height,
+                    width: e.target.value,
+                  },
+                };
               })
             }
           />
@@ -113,10 +113,13 @@ const AddProduct = () => {
           <input
             type="text"
             className="input"
-            value={product.height}
+            value={product.size.height}
             onChange={(e) =>
               setProduct((prevState) => {
-                return { ...prevState, height: e.target.value };
+                return {
+                  ...prevState,
+                  size: { width: prevState.size.width, height: e.target.value },
+                };
               })
             }
           />
@@ -135,14 +138,14 @@ const AddProduct = () => {
           />
         </div>
         {error && <div className="error">{error}</div>}
-        <button onClick={() => handleSubmit()}>Submit</button>
-        <button onClick={() => closeSidebar()}>Cancel</button>
+        <button onClick={() => handleSubmit()}>{submitButtonText}</button>
+        <button onClick={() => closeProductModal()}>Cancel</button>
       </div>
     </Wrapper>
   );
 };
 
-const Wrapper = styled.article`
+const Wrapper = styled.div`
   .modal {
     position: absolute;
     top: 50%;
@@ -150,8 +153,9 @@ const Wrapper = styled.article`
     background: var(--clr-grey-10);
     border-radius: var(--radius);
     z-index: 100;
+    transform: translate(-50%, -50%);
     display: ${(props) => (props.isOpen ? "block" : "none")};
   }
 `;
 
-export default AddProduct;
+export default ProductModal;
